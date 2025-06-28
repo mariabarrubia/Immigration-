@@ -1,11 +1,53 @@
 import React, { useState, useEffect } from 'react';
+import { Bar, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function App() {
-  // State management for interactive elements (tabs and search)
+  // State management
   const [activeTab, setActiveTab] = useState('crisis');
   const [searchTerm, setSearchTerm] = useState('');
+  const [highContrast, setHighContrast] = useState(false);
+  const [fontSize, setFontSize] = useState(16);
+  
+  // Immigration statistics data
+  const immigrationStats = {
+    labels: ['2017', '2018', '2019', '2020', '2021'],
+    datasets: [
+      {
+        label: 'Immigrants Admitted',
+        data: [1097830, 1054729, 1031957, 775760, 1031790],
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      },
+      {
+        label: 'Naturalized Citizens',
+        data: [715822, 756060, 834000, 537845, 606495],
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+      }
+    ]
+  };
 
-  // Card data from all sources, including the Kimi info.pdf content
+  // Top source countries data
+  const sourceCountries = {
+    labels: ['Mexico', 'India', 'China', 'Philippines', 'Dominican Republic', 'Other'],
+    datasets: [
+      {
+        data: [25, 18, 12, 8, 7, 30],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)'
+        ],
+      }
+    ]
+  };
+
+  // Card data from all sources
   const cardsData = {
     crisis: [
       {
@@ -20,7 +62,41 @@ export default function App() {
             "You have the right to refuse consent to a search",
             "You have the right to speak with a lawyer"
           ],
-          stats: "Over 500,000 rights cards distributed nationwide"
+          stats: "Over 500,000 rights cards distributed nationwide",
+          rightsTable: (
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-4 border-b">Right Category</th>
+                    <th className="py-2 px-4 border-b">Specific Rights</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Fair Treatment</td>
+                    <td className="py-2 px-4 border-b">Equal protection under the law, free from discrimination</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Labor Rights</td>
+                    <td className="py-2 px-4 border-b">Fair wages, safe working conditions, freedom from discrimination</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Education</td>
+                    <td className="py-2 px-4 border-b">Free public education for children K-12</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Healthcare</td>
+                    <td className="py-2 px-4 border-b">Access to emergency medical care</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Legal Representation</td>
+                    <td className="py-2 px-4 border-b">Right to hire an attorney during immigration proceedings</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )
         }
       },
       {
@@ -35,7 +111,25 @@ export default function App() {
             "Assign trusted contacts",
             "Prepare emergency go-bag"
           ],
-          tip: "Keep digital copies in cloud storage"
+          tip: "Keep digital copies in cloud storage",
+          map: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">ICE Enforcement Hotspots:</h4>
+              <div className="bg-gray-100 p-4 rounded">
+                <div className="flex justify-center mb-4">
+                  <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold">CA</div>
+                  <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold mx-4">TX</div>
+                  <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold">FL</div>
+                </div>
+                <div className="flex justify-center">
+                  <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold">NY</div>
+                  <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold mx-4">IL</div>
+                  <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center text-white font-bold">AZ</div>
+                </div>
+                <p className="mt-4 text-center text-sm">Red: High enforcement • Orange: Moderate enforcement</p>
+              </div>
+            </div>
+          )
         }
       }
     ],
@@ -50,9 +144,45 @@ export default function App() {
           popularForms: [
             "I-589: Asylum Application",
             "I-765: Work Permit",
-            "I-130: Family Sponsorship"
+            "I-130: Family Sponsorship",
+            "I-140: Employment Sponsorship",
+            "I-485: Adjustment of Status"
           ],
-          updates: "2025 Form Processing Times: 30-60 days average"
+          updates: "2025 Form Processing Times: 30-60 days average",
+          formStats: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Processing Times:</h4>
+              <div className="space-y-2">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>I-765 (Work Permit)</span>
+                    <span>45 days</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-blue-600 h-2.5 rounded-full" style={{width: '60%'}}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>I-485 (Adjust Status)</span>
+                    <span>90 days</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-green-600 h-2.5 rounded-full" style={{width: '80%'}}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>I-130 (Family Petition)</span>
+                    <span>75 days</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-yellow-600 h-2.5 rounded-full" style={{width: '70%'}}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
         }
       },
       {
@@ -67,46 +197,157 @@ export default function App() {
             "Store originals in fireproof safe",
             "Share access with trusted contact"
           ],
-          warning: "Never carry originals unless required"
+          warning: "Never carry originals unless required",
+          documentList: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Essential Documents:</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-blue-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>Passport & Visa</div>
+                </div>
+                <div className="bg-green-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>Birth Certificate</div>
+                </div>
+                <div className="bg-yellow-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>I-94 Arrival Record</div>
+                </div>
+                <div className="bg-purple-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>Work Permit</div>
+                </div>
+                <div className="bg-red-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>Social Security Card</div>
+                </div>
+                <div className="bg-indigo-50 p-2 rounded flex items-center">
+                  <div className="mr-2">📄</div>
+                  <div>Marriage Certificate</div>
+                </div>
+              </div>
+            </div>
+          )
         }
       },
       {
-        title: "Legal Pathways to Immigration",
-        description: "Understand the different legal avenues to immigrate to the U.S., including family-based, employment-based, refugee, and asylum statuses.",
-        icon: "👨‍👩‍👧‍👦",
-        button: "Learn More",
+        title: "Immigration Pathways",
+        description: "Visual guide to U.S. immigration pathways including family-based, employment-based, and refugee options.",
+        icon: "🗺️",
+        button: "Explore Options",
         link: "#",
         additionalInfo: {
-          tables: [
-            {
-              title: "Family-Based Immigration",
-              headers: ["Pathway Category", "Requirements", "Process", "Notes"],
-              data: [
-                ["Immediate Relatives", "Spouses, unmarried minor children under 21, and parents of U.S. citizens (applicants must be at least 21 years old)", "Submit Form I-130 (Petition for Alien Relative) to USCIS, wait for approval, apply for an immigrant visa or adjust status", "No annual quota limit, but applicants must meet financial requirements"],
-                ["Family Preference Categories", "Siblings of U.S. citizens (applicants must be at least 21), married or unmarried adult children of U.S. citizens, spouses and unmarried children of permanent residents", "Submit Form I-130, wait for a visa number to become available based on priority dates, apply for an immigrant visa or adjust status", "Annual quotas apply, with priority dates varying by category and country"],
-                ["Green Card Lottery (Diversity Visa Program)", "Must have a high school diploma or equivalent and two years of work experience in a specific occupation, or be a native of a country with low immigration rates to the U.S.", "Register online during the designated period each year", "Limited to 50,000 visas annually, with applicants selected randomly"]
-              ]
-            },
-            {
-              title: "Employment-Based Immigration",
-              headers: ["Pathway Category", "Requirements", "Process", "Notes"],
-              data: [
-                ["EB-1: Extraordinary Ability", "Individuals with extraordinary ability in sciences, arts, education, business, or athletics, or outstanding professors/researchers, or multinational executives/managers", "Employer submits Form I-140 (Immigrant Petition for Alien Worker) to USCIS, wait for approval, apply for an immigrant visa or adjust status", "No labor certification required, but applicants must meet specific criteria"],
-                ["EB-2: Advanced Professionals and Skilled Workers", "Hold an advanced degree or its equivalent and possess exceptional ability in sciences, arts, or business, or hold a bachelor's degree and at least five years of progressive work experience in the field", "Employer submits Form I-140, obtain a labor certification, wait for approval, apply for an immigrant visa or adjust status", "Labor certification may be required, with priority dates varying by category and country"],
-                ["EB-3: Skilled Workers, Professionals, and Other Workers", "Skilled workers (at least two years of training/experience), professionals (bachelor's degree required), or other workers (unskilled labor, not temporary or seasonal)", "Employer submits Form I-140, obtain a labor certification", "Labor certification may be required, with priority dates varying by category and country"],
-                ["EB-4: Special Immigrants", "Ministers, religious workers, employees of U.S. government abroad, Iraqi/Afghan interpreters, etc.", "Submit relevant petitions and supporting documents to USCIS, wait for approval, apply for an immigrant visa or adjust status", "Specific eligibility criteria apply for each category"],
-                ["EB-5: Immigrant Investor Program", "Invest at least $1.8 million (or $900,000 in targeted employment areas) in a commercial enterprise in the U.S., creating or preserving at least 10 full-time jobs for U.S. workers", "Submit Form I-526 (Immigrant Petition by Alien Entrepreneur) to USCIS, wait for approval, apply for a conditional green card, and after two years, submit Form 1-829 to remove conditions", "Investment amount and job creation requirements must be met"]
-              ]
-            },
-            {
-              title: "Refugee and Asylum Status",
-              headers: ["Pathway Category", "Requirements", "Process", "Notes"],
-              data: [
-                ["Refugee Status", "Individuals outside their home country who are unable or unwilling to return due to persecution or a well-founded fear of persecution based on race, religion, nationality, political opinion, or membership in a particular social group", "Apply for refugee status overseas through U.S. embassies or consulates, undergo security checks and interviews, wait for approval, and resettle in the U.S.", "Must apply while outside the U.S., with priority given to those referred by the U.S. government, U.S. embassies, or designated organizations"],
-                ["Asylum Status", "Individuals already in the U.S. or seeking entry at a U.S. port of entry who are unable or unwilling to return to their home country due to persecution or a well-founded fear of persecution based on race, religion, nationality, political opinion, or membership in a particular social group", "Affirmative asylum: Submit Form 1-589 (Application for Asylum and Withholding of Removal) to USCIS within one year of arrival in the U.S., wait for an interview and decision. Defensive asylum: Apply during deportation proceedings before an immigration judge", "Must meet the definition of a refugee, with a one-year filing deadline for affirmative asylum"]
-              ]
-            }
-          ]
+          pathways: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Common Immigration Pathways:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border p-4 rounded-lg">
+                  <h5 className="font-medium mb-2">Family-Based</h5>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>Immediate relatives of U.S. citizens</li>
+                    <li>Family preference categories</li>
+                    <li>Green Card Lottery</li>
+                  </ul>
+                </div>
+                <div className="border p-4 rounded-lg">
+                  <h5 className="font-medium mb-2">Employment-Based</h5>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>EB-1: Extraordinary Ability</li>
+                    <li>EB-2: Advanced Professionals</li>
+                    <li>EB-3: Skilled Workers</li>
+                    <li>EB-5: Investor Program</li>
+                  </ul>
+                </div>
+                <div className="border p-4 rounded-lg md:col-span-2">
+                  <h5 className="font-medium mb-2">Humanitarian</h5>
+                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                    <li>Refugee Status</li>
+                    <li>Asylum Status</li>
+                    <li>Temporary Protected Status</li>
+                    <li>Victims of Crime (U visa)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ),
+          flowchart: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Immigration Process Flow:</h4>
+              <div className="bg-gray-100 p-4 rounded">
+                <div className="flex flex-col items-center">
+                  <div className="bg-blue-100 px-4 py-2 rounded mb-2 text-center">Immigrant Enters U.S.</div>
+                  <div className="text-2xl mb-2">↓</div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <div className="bg-green-100 px-4 py-2 rounded text-center">Family-Based</div>
+                    <div className="bg-yellow-100 px-4 py-2 rounded text-center">Employment-Based</div>
+                    <div className="bg-purple-100 px-4 py-2 rounded text-center">Refugee/Asylee</div>
+                  </div>
+                  <div className="text-2xl my-2">↓</div>
+                  <div className="bg-blue-100 px-4 py-2 rounded text-center">Apply for Status</div>
+                  <div className="text-2xl my-2">↓</div>
+                  <div className="bg-green-500 text-white px-4 py-2 rounded text-center">Obtain Green Card</div>
+                  <div className="text-2xl my-2">↓</div>
+                  <div className="bg-blue-500 text-white px-4 py-2 rounded text-center">Apply for Citizenship (after 5 years)</div>
+                </div>
+              </div>
+            </div>
+          )
+        }
+      },
+      {
+        title: "Required Documentation",
+        description: "Guide to essential documents for immigrants including visas, green cards, work permits, and IDs.",
+        icon: "📋",
+        button: "View Requirements",
+        link: "#",
+        additionalInfo: {
+          table: (
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-4 border-b">Document</th>
+                    <th className="py-2 px-4 border-b">Purpose</th>
+                    <th className="py-2 px-4 border-b">Validity</th>
+                    <th className="py-2 px-4 border-b">Application</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Visa</td>
+                    <td className="py-2 px-4 border-b">Entry to U.S. for specific purpose</td>
+                    <td className="py-2 px-4 border-b">Months to years</td>
+                    <td className="py-2 px-4 border-b">U.S. Embassy/Consulate</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Green Card</td>
+                    <td className="py-2 px-4 border-b">Permanent residence</td>
+                    <td className="py-2 px-4 border-b">10 years (renewable)</td>
+                    <td className="py-2 px-4 border-b">Form I-485</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Work Permit (EAD)</td>
+                    <td className="py-2 px-4 border-b">Authorization to work</td>
+                    <td className="py-2 px-4 border-b">1-2 years</td>
+                    <td className="py-2 px-4 border-b">Form I-765</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">SSN</td>
+                    <td className="py-2 px-4 border-b">Employment and benefits</td>
+                    <td className="py-2 px-4 border-b">Permanent</td>
+                    <td className="py-2 px-4 border-b">Social Security Office</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">State ID</td>
+                    <td className="py-2 px-4 border-b">Identification</td>
+                    <td className="py-2 px-4 border-b">4-8 years</td>
+                    <td className="py-2 px-4 border-b">DMV</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )
         }
       }
     ],
@@ -123,7 +364,35 @@ export default function App() {
             "Language-specific assistance available",
             "Pro bono options for low-income families"
           ],
-          stats: "85% success rate in legal aid cases"
+          stats: "85% success rate in legal aid cases",
+          orgList: (
+            <div className="mt-4">
+              <h4 className="font-semibold mb-2">Top Legal Aid Organizations:</h4>
+              <ul className="space-y-2">
+                <li className="flex items-center">
+                  <div className="bg-blue-100 rounded-full w-8 h-8 flex items-center justify-center mr-2">IL</div>
+                  <div>
+                    <div className="font-medium">Immigrant Legal Resource Center</div>
+                    <div className="text-sm">1-415-543-0597</div>
+                  </div>
+                </li>
+                <li className="flex items-center">
+                  <div className="bg-green-100 rounded-full w-8 h-8 flex items-center justify-center mr-2">CL</div>
+                  <div>
+                    <div className="font-medium">Catholic Legal Immigration Network</div>
+                    <div className="text-sm">1-301-565-4800</div>
+                  </div>
+                </li>
+                <li className="flex items-center">
+                  <div className="bg-yellow-100 rounded-full w-8 h-8 flex items-center justify-center mr-2">NI</div>
+                  <div>
+                    <div className="font-medium">National Immigration Law Center</div>
+                    <div className="text-sm">1-213-639-3900</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          )
         }
       },
       {
@@ -135,96 +404,143 @@ export default function App() {
         additionalInfo: {
           recentChanges: [
             "New asylum processing rules (effective 3/15/2025)",
-            "Expansion of Temporary Protected Status"
+            "Expansion of Temporary Protected Status",
+            "DACA policy changes implemented",
+            "Public Charge Rule modifications"
           ],
-          tip: "Sign up for SMS alerts for critical updates"
+          tip: "Sign up for SMS alerts for critical updates",
+          policyTable: (
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-2 px-4 border-b">Policy</th>
+                    <th className="py-2 px-4 border-b">Date</th>
+                    <th className="py-2 px-4 border-b">Impact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Public Charge Rule</td>
+                    <td className="py-2 px-4 border-b">02/24/2020</td>
+                    <td className="py-2 px-4 border-b">Affects low-income green card applicants</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">Travel Bans</td>
+                    <td className="py-2 px-4 border-b">Varies</td>
+                    <td className="py-2 px-4 border-b">Restrictions from certain countries</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-4 border-b">DACA Changes</td>
+                    <td className="py-2 px-4 border-b">Varies</td>
+                    <td className="py-2 px-4 border-b">Affects Dreamers' eligibility</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )
         }
       },
       {
-        title: "Rights of Immigrants",
-        description: "Understand your fundamental rights as an immigrant in the U.S. under federal and state laws.",
-        icon: "✊",
-        button: "Know Your Rights",
+        title: "Immigration Statistics",
+        description: "Recent data on U.S. immigration trends, top source countries, and naturalization rates.",
+        icon: "📊",
+        button: "View Data",
         link: "#",
         additionalInfo: {
-          tables: [
-            {
-              title: "Immigrant Rights Overview",
-              headers: ["Right Category", "Specific Rights", "Legal Basis"],
-              data: [
-                ["Right to Fair Treatment", "Immigrants are entitled to equal protection under the law, free from discrimination based on race, color, religion, gender, national origin, etc.", "U.S. Constitution, Civil Rights Act of 1964, and other relevant laws"],
-                ["Right to Labor", "Immigrants with valid work authorization have the right to fair wages, safe working conditions, and freedom from workplace discrimination and harassment. They also have the right to join unions and engage in collective bargaining.", "Fair Labor Standards Act (FLSA), Occupational Safety and Health Act (OSHA), National Labor Relations Act (NLRA), etc."],
-                ["Right to Education", "Children of immigrants (including undocumented immigrants) have the right to free public education from kindergarten through 12th grade.", "Plyler v. Doe Supreme Court decision"],
-                ["Right to Healthcare", "Immigrants can access emergency medical care and, in some states, may be eligible for certain healthcare benefits. Lawful permanent residents and some other qualified immigrants may also qualify for Medicaid and the Children's Health Insurance Program (CHIP).", "Emergency Medicaid provisions, state-specific healthcare laws, etc."],
-                ["Right to Legal Representation", "Immigrants have the right to legal representation during immigration proceedings, though the government is not obligated to provide free attorneys. They may hire private attorneys or seek assistance from nonprofit organizations.", "U.S. Constitution, Immigration and Nationality Act (INA)"]
-              ]
-            }
-          ]
+          charts: (
+            <div className="mt-4">
+              <Bar
+                data={immigrationStats}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text: 'U.S. Immigration Trends (2017-2021)'
+                    }
+                  }
+                }}
+              />
+              <div className="mt-8">
+                <h4 className="font-semibold mb-2 text-center">Top Source Countries (2021)</h4>
+                <div className="flex justify-center">
+                  <div className="w-64 h-64">
+                    <Pie
+                      data={sourceCountries}
+                      options={{
+                        responsive: true,
+                        plugins: {
+                          legend: {
+                            position: 'bottom',
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
         }
       },
       {
-        title: "Support Systems for Immigrants",
-        description: "Discover various government agencies, non-profit organizations, and community resources available to assist immigrants.",
+        title: "Support Resources",
+        description: "Government agencies, nonprofits, and community resources to help immigrants settle successfully.",
         icon: "🤝",
         button: "Find Support",
         link: "#",
         additionalInfo: {
-          tables: [
-            {
-              title: "Key Support Categories",
-              headers: ["Support Category", "Resource Description", "Contact Information"],
-              data: [
-                ["Government Agencies", "U.S. Citizenship and Immigration Services (USCIS): Manages immigration applications and benefits. Department of State (DOS): Oversees visa issuance at embassies and consulates. Department of Homeland Security (DHS): Enforces immigration laws and manages border security.", "USCIS website: https://www.uscis.gov, customer service phone: 1-800-375-5283. DOS website: https://travel.state.gov. DHS website: https://www.dhs.gov"],
-                ["Nonprofit Organizations", "Organizations such as the Immigrant Legal Resource Center (ILRC), Catholic Legal Immigration Network (CLINIC), and National Immigration Law Center (NILC) provide legal assistance, advocacy, and educational resources for immigrants.", "ILRC website: https://www.ilrc.org. CLINIC website: https://cliniclegal.org. NILC website: https://www.nilc.org"],
-                ["Community Resources", "Local immigrant rights organizations, cultural associations, and religious groups offer language classes, cultural adaptation support, job training, and other services to help immigrants integrate into American society.", "Examples include the National Association of Latino Elected and Appointed Officials (NALEO) Educational Fund, Asian Americans Advancing Justice (AAAJ), etc. Specific organizations and contact details can be found through local searches"],
-                ["Legal Aid", "Low-income immigrants may qualify for free or low-cost legal aid services provided by organizations such as Legal Services Corporation (LSC)-funded programs and law school clinics.", "LSC website: https://www.lsc.gov. Search for local law school clinics through university websites"]
-              ]
-            }
-          ]
-        }
-      },
-      {
-        title: "Practical Resources for Immigrants",
-        description: "Find resources for language learning, employment, housing, financial services, and healthcare.",
-        icon: "📚",
-        button: "Explore Resources",
-        link: "#",
-        additionalInfo: {
-          tables: [
-            {
-              title: "Practical Support Categories",
-              headers: ["Resource Category", "Resource Description", "Access Method"],
-              data: [
-                ["Language Learning", "Free online language learning platforms such as Duolingo, Babbel, and Memrise. Local community colleges and adult education centers may also offer English classes for immigrants.", "Download apps or visit websites to register for courses"],
-                ["Employment Resources", "U.S. Department of Labor's job search website (Jobs.Org), state employment agencies, and job boards like Indeed and LinkedIn. Immigrant employment assistance programs offered by nonprofit organizations can also provide job training and placement services.", "Visit websites or contact organizations directly"],
-                ["Housing Resources", "Websites like Zillow, Realtor.com, and Craigslist for housing searches. Local housing authorities may offer rental assistance programs for low-income immigrants.", "Browse websites or contact housing authorities"],
-                ["Financial Services", "Immigrant-friendly banks and credit unions offering accounts and loans with flexible requirements. Financial literacy resources and counseling services provided by nonprofit organizations.", "Visit bank branches or websites to open accounts, or contact nonprofit organizations for counseling"],
-                ["Healthcare Resources", "Federally Qualified Health Centers (FQHCs) provide affordable healthcare services to all individuals, regardless of immigration status. Some states offer healthcare programs for immigrants.", "Search for FQHCs in your area or visit state healthcare websites"]
-              ]
-            }
-          ]
-        }
-      },
-      {
-        title: "Important Contact Information",
-        description: "Key contact details for government agencies and organizations that provide support and services to immigrants.",
-        icon: "📞",
-        button: "View Contacts",
-        link: "#",
-        additionalInfo: {
-          tables: [
-            {
-              title: "Essential Contacts",
-              headers: ["Organization Name", "Contact Information", "Service Description"],
-              data: [
-                ["U.S. Citizenship and Immigration Services (USCIS)", "Website: https://www.uscis.gov, customer service phone: 1-800-375-5283", "Handles immigration applications and benefits, provides application guidance and status inquiries"],
-                ["Department of State (DOS) Bureau of Consular Affairs", "Website: https://travel.state.gov, phone: 1-800-783-4244 (for U.S. citizens abroad)", "Oversees visa issuance at embassies and consulates, provides visa application information and travel advisories"],
-                ["Immigration and Customs Enforcement (ICE)", "Website: https://www.ice.gov, detainer line: 1-866-347-ICE8 (1-866-347-4233)", "Enforces immigration laws, handles immigration enforcement and removal operations"],
-                ["National Immigration Forum", "Website: https://wwwimmigrationforum.org, phone: 1-202-507-7150", "Advocates for immigrant-friendly policies, provides policy analysis and research reports"],
-                ["Immigrant Legal Resource Center (ILRC)", "Website: https://www.ilrc.org, phone: 1-415-543-0597", "Offers legal training and resources for immigration professionals, publishes practice manuals and guides"]
-              ]
-            }
-          ]
+          resources: (
+            <div>
+              <h4 className="font-semibold mb-2">Key Organizations:</h4>
+              <ul className="list-disc pl-5 space-y-1 mb-4">
+                <li><strong>USCIS</strong>: Immigration applications and benefits (1-800-375-5283)</li>
+                <li><strong>Department of State</strong>: Visa issuance (1-800-783-4244)</li>
+                <li><strong>ILRC</strong>: Legal assistance (1-415-543-0597)</li>
+                <li><strong>CLINIC</strong>: Legal network (1-301-565-4800)</li>
+              </ul>
+              
+              <h4 className="font-semibold mb-2">Practical Resources:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <div className="font-bold text-blue-700 mb-1">Language Learning</div>
+                  <ul className="text-sm pl-2">
+                    <li>• Duolingo</li>
+                    <li>• Babbel</li>
+                    <li>• Local community classes</li>
+                  </ul>
+                </div>
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="font-bold text-green-700 mb-1">Employment</div>
+                  <ul className="text-sm pl-2">
+                    <li>• Jobs.org</li>
+                    <li>• Indeed</li>
+                    <li>• LinkedIn</li>
+                  </ul>
+                </div>
+                <div className="bg-yellow-50 p-3 rounded-lg">
+                  <div className="font-bold text-yellow-700 mb-1">Housing</div>
+                  <ul className="text-sm pl-2">
+                    <li>• Zillow</li>
+                    <li>• Realtor.com</li>
+                    <li>• Local housing authorities</li>
+                  </ul>
+                </div>
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <div className="font-bold text-purple-700 mb-1">Healthcare</div>
+                  <ul className="text-sm pl-2">
+                    <li>• Federally Qualified Health Centers</li>
+                    <li>• State healthcare programs</li>
+                    <li>• Emergency Medicaid</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )
         }
       }
     ]
@@ -234,25 +550,40 @@ export default function App() {
   const filteredCards = (cards) => {
     if (!searchTerm) return cards;
     const term = searchTerm.toLowerCase();
-    return cards.filter(card =>
-      card.title.toLowerCase().includes(term) ||
-      card.description.toLowerCase().includes(term) ||
-      // Also search within table data for better search functionality
-      (card.additionalInfo.tables && card.additionalInfo.tables.some(table =>
-        table.data.some(row => row.some(cell => String(cell).toLowerCase().includes(term)))
-      ))
+    return cards.filter(card => 
+      card.title.toLowerCase().includes(term) || 
+      card.description.toLowerCase().includes(term)
     );
   };
 
+  // Apply accessibility settings
+  useEffect(() => {
+    document.body.classList.toggle('high-contrast', highContrast);
+    document.documentElement.style.fontSize = `${fontSize}px`;
+  }, [highContrast, fontSize]);
+
   return (
-    <div className={`min-h-screen bg-gray-50`}>
+    <div className={`min-h-screen ${highContrast ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+      {/* Accessibility Bar */}
+      <div className="bg-black text-white p-2 flex justify-end gap-4 text-sm">
+        <button onClick={() => setHighContrast(!highContrast)} className="hover:underline">
+          {highContrast ? "Normal Contrast" : "High Contrast"}
+        </button>
+        <button onClick={() => setFontSize(Math.min(fontSize + 2, 20))} className="hover:underline">
+          Increase Text
+        </button>
+        <button onClick={() => setFontSize(Math.max(fontSize - 2, 12))} className="hover:underline">
+          Decrease Text
+        </button>
+      </div>
+
       {/* Header */}
-      <header className={`p-6 bg-white shadow-md`}>
+      <header className={`p-6 ${highContrast ? 'bg-gray-800' : 'bg-white'} shadow-md`}>
         <div className="container mx-auto flex justify-between items-center">
           <div className="logo-text text-2xl font-bold">
             Immigrant<span className="text-blue-500">Shield</span>
           </div>
-
+          
           <div className="flex items-center gap-6">
             {/* Search Bar */}
             <div className="relative">
@@ -261,14 +592,16 @@ export default function App() {
                 placeholder="Find critical resources..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className={`pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 border-gray-300`}
+                className={`pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  highContrast ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300'
+                }`}
               />
               <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
             </div>
-
-            {/* Language Switcher (Currently static, would require more logic for full functionality) */}
+            
+            {/* Language Switcher */}
             <div className="relative">
               <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg">
                 <span>English</span>
@@ -276,7 +609,6 @@ export default function App() {
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
-              {/* This div is hidden by default. You'll need JavaScript to toggle its visibility */}
               <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg p-2 hidden">
                 <div className="py-1">Languages</div>
                 <div className="flex flex-wrap gap-2">
@@ -289,7 +621,6 @@ export default function App() {
           </div>
         </div>
       </header>
-
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-800 to-blue-600 text-white py-16">
@@ -304,7 +635,6 @@ export default function App() {
         </div>
       </section>
 
-
       {/* Tabs Navigation */}
       <div className="container mx-auto px-6 py-8">
         <div className="flex gap-4 mb-8 border-b border-gray-200">
@@ -313,8 +643,8 @@ export default function App() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`py-3 px-6 font-medium transition-colors ${
-                activeTab === tab
-                  ? 'border-b-2 border-blue-500 text-blue-600'
+                activeTab === tab 
+                  ? 'border-b-2 border-blue-500 text-blue-600' 
                   : 'text-gray-600 hover:text-blue-600'
               }`}
             >
@@ -323,15 +653,14 @@ export default function App() {
           ))}
         </div>
 
-
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCards(cardsData[activeTab]).map((card, index) => (
-            <div
+            <div 
               key={index}
               className={`bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:transform hover:-translate-y-1 hover:shadow-lg border-l-4 ${
-                activeTab === 'crisis' ? 'border-red-500' :
-                  activeTab === 'prep' ? 'border-yellow-500' : 'border-green-500'
+                activeTab === 'crisis' ? 'border-red-500' : 
+                activeTab === 'prep' ? 'border-yellow-500' : 'border-green-500'
               }`}
             >
               <div className="p-6">
@@ -340,9 +669,11 @@ export default function App() {
                   <h3 className="text-xl font-bold text-gray-800">{card.title}</h3>
                 </div>
                 <p className="text-gray-600 mb-4">{card.description}</p>
-
+                
                 {/* Additional Info */}
-                <div className={`mt-4 p-4 rounded-lg mb-4 bg-gray-50`}>
+                <div className={`mt-4 p-4 rounded-lg mb-4 ${
+                  highContrast ? 'bg-gray-800' : 'bg-gray-50'
+                }`}>
                   {card.additionalInfo.keyFacts && (
                     <div>
                       <h4 className="font-semibold mb-2">Key Facts:</h4>
@@ -353,7 +684,7 @@ export default function App() {
                       </ul>
                     </div>
                   )}
-
+                  
                   {card.additionalInfo.checklist && (
                     <div>
                       <h4 className="font-semibold mb-2">Checklist:</h4>
@@ -364,7 +695,7 @@ export default function App() {
                       </ul>
                     </div>
                   )}
-
+                  
                   {card.additionalInfo.popularForms && (
                     <div>
                       <h4 className="font-semibold mb-2">Popular Forms:</h4>
@@ -375,7 +706,7 @@ export default function App() {
                       </ul>
                     </div>
                   )}
-
+                  
                   {card.additionalInfo.recentChanges && (
                     <div>
                       <h4 className="font-semibold mb-2">Recent Policy Changes:</h4>
@@ -386,49 +717,85 @@ export default function App() {
                       </ul>
                     </div>
                   )}
-
-                  {card.additionalInfo.tables && (
+                  
+                  {card.additionalInfo.flowchart && (
                     <div>
-                      {card.additionalInfo.tables.map((table, tableIndex) => (
-                        <div key={tableIndex} className="mb-6">
-                          <h4 className="font-semibold mb-2 text-lg">{table.title}:</h4>
-                          <div className="overflow-x-auto">
-                            <table className="min-w-full bg-white border border-gray-200">
-                              <thead>
-                                <tr>
-                                  {table.headers.map((header, hIndex) => (
-                                    <th key={hIndex} className="py-2 px-4 border-b border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                                      {header}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {table.data.map((row, rIndex) => (
-                                  <tr key={rIndex} className="hover:bg-gray-50">
-                                    {row.map((cell, cIndex) => (
-                                      <td key={cIndex} className="py-2 px-4 border-b border-gray-200 text-sm text-gray-800">
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      ))}
+                      <h4 className="font-semibold mb-2">Immigration Process Flow:</h4>
+                      {card.additionalInfo.flowchart}
                     </div>
                   )}
-
+                  
+                  {card.additionalInfo.table && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Document Requirements:</h4>
+                      {card.additionalInfo.table}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.charts && (
+                    <div>
+                      {card.additionalInfo.charts}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.resources && (
+                    <div>
+                      {card.additionalInfo.resources}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.rightsTable && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Immigrant Rights:</h4>
+                      {card.additionalInfo.rightsTable}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.map && (
+                    <div>
+                      {card.additionalInfo.map}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.formStats && (
+                    <div>
+                      {card.additionalInfo.formStats}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.documentList && (
+                    <div>
+                      {card.additionalInfo.documentList}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.pathways && (
+                    <div>
+                      {card.additionalInfo.pathways}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.policyTable && (
+                    <div>
+                      <h4 className="font-semibold mb-2">Recent Policy Changes:</h4>
+                      {card.additionalInfo.policyTable}
+                    </div>
+                  )}
+                  
+                  {card.additionalInfo.orgList && (
+                    <div>
+                      {card.additionalInfo.orgList}
+                    </div>
+                  )}
+                  
                   {card.additionalInfo.warning && (
                     <div className="mt-2 text-sm text-yellow-600">
                       ⚠️ {card.additionalInfo.warning}
                     </div>
                   )}
                 </div>
-
-                <a
+                
+                <a 
                   href={card.link}
                   className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors"
                 >
@@ -440,13 +807,12 @@ export default function App() {
         </div>
       </div>
 
-
       {/* Footer */}
-      <footer className={`py-12 bg-gray-800 text-white`}>
+      <footer className={`py-12 ${highContrast ? 'bg-gray-800' : 'bg-gray-800 text-white'}`}>
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">Immigrant<span className="text-blue-500">Shield</span></h3>
+              <h3 className="text-xl font-bold mb-4">ImmigrantShield</h3>
               <p className="text-gray-300 mb-4">
                 Providing critical resources and support for immigrants navigating the U.S. immigration system.
               </p>
@@ -458,7 +824,7 @@ export default function App() {
                 ))}
               </div>
             </div>
-
+            
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
@@ -469,7 +835,7 @@ export default function App() {
                 ))}
               </ul>
             </div>
-
+            
             <div>
               <h3 className="text-lg font-semibold mb-4">Support Our Mission</h3>
               <p className="text-gray-300 mb-4">
@@ -479,7 +845,7 @@ export default function App() {
                 Donate Now
               </button>
             </div>
-
+            
             <div>
               <h3 className="text-lg font-semibold mb-4">Languages</h3>
               <div className="flex flex-wrap gap-2">
@@ -489,7 +855,7 @@ export default function App() {
                   </button>
                 ))}
               </div>
-
+              
               <div className="mt-6">
                 <h4 className="text-sm font-semibold mb-2">Accessibility</h4>
                 <p className="text-sm text-gray-300">
@@ -499,7 +865,7 @@ export default function App() {
               </div>
             </div>
           </div>
-
+          
           <div className="border-t border-gray-700 mt-12 pt-6 text-center text-gray-400 text-sm">
             <p>Data Sources: USCIS, ICE, TRAC, and survivor insights | Updated daily</p>
             <p className="mt-2">&copy; 2025 ImmigrantShield. All rights reserved. This website does not provide legal advice.</p>
